@@ -353,7 +353,7 @@ dependencies {
     implementation(libs.weatherView) {
         exclude(group = "com.github.plattysoft", module = "Leonids")
     }
-    implementation("com.github.plattysoft:Leonids:1.3.2")
+    implementation("com.plattysoft.leonids:LeonidsLib:1.3.2")
     implementation(libs.appcenter.analytics)
     implementation(libs.appcenter.crashes)
     implementation(libs.kotlinx.serialization.json)

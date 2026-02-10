@@ -34,6 +34,11 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven("https://jcenter.bintray.com/") {
+            content {
+                 includeGroup("com.plattysoft.leonids")
+            }
+        }
     }
 }
 
