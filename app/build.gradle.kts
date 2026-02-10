@@ -73,7 +73,8 @@ fun getSignatureKeyDigest(signConfig: SigningConfig?): String? {
     val key1: String? = if (signConfig?.storeFile != null) {
         // extract certificate digest
         val key = signConfig.storeFile
-        val keyStore = KeyStore.getInstance(signConfig.storeType ?: KeyStore.getDefaultType())
+        val storeType = signConfig.storeType ?: if (key?.name?.endsWith(".jks", true) == true || key?.name?.endsWith(".keystore", true) == true) "JKS" else KeyStore.getDefaultType()
+        val keyStore = KeyStore.getInstance(storeType)
         FileInputStream(key!!).use {
             keyStore.load(it, signConfig.storePassword!!.toCharArray())
         }
