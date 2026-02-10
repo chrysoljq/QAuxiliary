@@ -24,7 +24,8 @@ import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.Project
 
 fun Project.configureAppSigningConfigsForRelease() = withAndroidApplication {
-    if (System.getenv("KEYSTORE_PATH") == null) return@withAndroidApplication
+    val keystorePath = System.getenv("KEYSTORE_PATH")
+    if (keystorePath == null || !file(keystorePath).exists() || file(keystorePath).length() == 0L) return@withAndroidApplication
     configure<ApplicationExtension>("android") {
         signingConfigs {
             create("release") {
