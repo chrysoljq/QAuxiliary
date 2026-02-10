@@ -24,15 +24,28 @@ import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.Project
 
 fun Project.configureAppSigningConfigsForRelease() = withAndroidApplication {
-    val keystorePath = System.getenv("KEYSTORE_PATH")
-    if (keystorePath == null || !file(keystorePath).exists() || file(keystorePath).length() == 0L) return@withAndroidApplication
+    val envKeystorePath = System.getenv("KEYSTORE_PATH")
+    val useEnvKeystore = envKeystorePath != null && file(envKeystorePath).exists() && file(envKeystorePath).length() > 0L
+    
+    val tempKeystore = file("temp.jks")
+    val useTempKeystore = !useEnvKeystore && tempKeystore.exists()
+
+    if (!useEnvKeystore && !useTempKeystore) return@withAndroidApplication
+
     configure<ApplicationExtension>("android") {
         signingConfigs {
             create("release") {
-                storeFile = file(System.getenv("KEYSTORE_PATH"))
-                storePassword = System.getenv("KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS")
-                keyPassword = System.getenv("KEY_PASSWORD")
+                if (useEnvKeystore) {
+                    storeFile = file(envKeystorePath!!)
+                    storePassword = System.getenv("KEYSTORE_PASSWORD")
+                    keyAlias = System.getenv("KEY_ALIAS")
+                    keyPassword = System.getenv("KEY_PASSWORD")
+                } else {
+                    storeFile = tempKeystore
+                    storePassword = "password"
+                    keyAlias = "qauxv"
+                    keyPassword = "password"
+                }
                 enableV2Signing = true
             }
         }
