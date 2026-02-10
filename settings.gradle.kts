@@ -33,6 +33,12 @@ dependencyResolutionManagement {
                 includeGroup("de.robv.android.xposed")
             }
         }
+        maven("http://maven.xdja.com:8081/nexus3/repository/aliyun/") {
+            isAllowInsecureProtocol = true
+            content {
+                includeGroup("com.plattysoft.leonids")
+            }
+        }
         mavenCentral()
     }
 }
