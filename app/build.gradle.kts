@@ -85,12 +85,8 @@ fun getSignatureKeyDigest(signConfig: SigningConfig?): String? {
             }
         }
 
-        val keyStore = if (signConfig.storeType != null) {
-             KeyStore.getInstance(signConfig.storeType).apply { FileInputStream(key!!).use { load(it, password) } }
-        } else {
-            // Try JKS first (fixes 'Tag number over 30'), then PKCS12, then Default
-            loadKeyStore("JKS") ?: loadKeyStore("PKCS12") ?: loadKeyStore(KeyStore.getDefaultType()) ?: error("Could not load keystore as JKS or PKCS12")
-        }
+        val candidates = listOfNotNull(signConfig.storeType, "JKS", "PKCS12", KeyStore.getDefaultType()).distinct()
+        val keyStore = candidates.firstNotNullOfOrNull { loadKeyStore(it) } ?: error("Could not load keystore. Tried: $candidates")
         val cert = keyStore.getCertificate(signConfig.keyAlias!!)
         val md = MessageDigest.getInstance("MD5")
         val digest = md.digest(cert.encoded)
@@ -518,10 +514,17 @@ val synthesizeDistReleaseApksCI by tasks.registering {
                 }
                 ZFiles.apk(outputApk, options).use { dstApk ->
                     if (signConfig != null) {
-                        val keyStore = KeyStore.getInstance(signConfig.storeType ?: KeyStore.getDefaultType())
-                        FileInputStream(signConfig.storeFile!!).use {
-                            keyStore.load(it, signConfig.storePassword!!.toCharArray())
+                        val key = signConfig.storeFile!!
+                        val password = signConfig.storePassword!!.toCharArray()
+                        fun loadKeyStore(type: String): KeyStore? {
+                            return try {
+                                val ks = KeyStore.getInstance(type)
+                                FileInputStream(key).use { ks.load(it, password) }
+                                ks
+                            } catch (e: Exception) { null }
                         }
+                        val candidates = listOfNotNull(signConfig.storeType, "JKS", "PKCS12", KeyStore.getDefaultType()).distinct()
+                        val keyStore = candidates.firstNotNullOfOrNull { loadKeyStore(it) } ?: error("Could not load keystore. Tried: $candidates")
                         val protParam = KeyStore.PasswordProtection(signConfig.keyPassword!!.toCharArray())
                         val keyEntry = keyStore.getEntry(signConfig.keyAlias!!, protParam)
                         val privateKey = keyEntry as KeyStore.PrivateKeyEntry
