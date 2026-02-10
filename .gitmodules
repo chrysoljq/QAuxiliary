@@ -43,3 +43,6 @@
 [submodule "libs/libxposed/service/service"]
 	path = libs/libxposed/service/service
 	url = https://github.com/libxposed/service
+[submodule "libs/Leonids"]
+	path = libs/Leonids
+	url = https://github.com/plattysoft/Leonids.git

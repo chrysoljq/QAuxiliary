@@ -34,11 +34,6 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
-        maven("https://jcenter.bintray.com/") {
-            content {
-                 includeGroup("com.plattysoft.leonids")
-            }
-        }
     }
 }
 
@@ -76,4 +71,7 @@ include(
     ":libs:xView",
     ":libs:libxposed:api",
     ":libs:libxposed:service",
+    ":libs:Leonids",
 )
+
+project(":libs:Leonids").projectDir = file("libs/Leonids/LeonidsLib")
