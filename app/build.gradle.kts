@@ -73,10 +73,23 @@ fun getSignatureKeyDigest(signConfig: SigningConfig?): String? {
     val key1: String? = if (signConfig?.storeFile != null) {
         // extract certificate digest
         val key = signConfig.storeFile
-        val storeType = signConfig.storeType ?: if (key?.name?.endsWith(".jks", true) == true || key?.name?.endsWith(".keystore", true) == true) "JKS" else KeyStore.getDefaultType()
-        val keyStore = KeyStore.getInstance(storeType)
-        FileInputStream(key!!).use {
-            keyStore.load(it, signConfig.storePassword!!.toCharArray())
+        val password = signConfig.storePassword!!.toCharArray()
+        
+        fun loadKeyStore(type: String): KeyStore? {
+            return try {
+                val ks = KeyStore.getInstance(type)
+                FileInputStream(key!!).use { ks.load(it, password) }
+                ks
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        val keyStore = if (signConfig.storeType != null) {
+             KeyStore.getInstance(signConfig.storeType).apply { FileInputStream(key!!).use { load(it, password) } }
+        } else {
+            // Try JKS first (fixes 'Tag number over 30'), then PKCS12, then Default
+            loadKeyStore("JKS") ?: loadKeyStore("PKCS12") ?: loadKeyStore(KeyStore.getDefaultType()) ?: error("Could not load keystore as JKS or PKCS12")
         }
         val cert = keyStore.getCertificate(signConfig.keyAlias!!)
         val md = MessageDigest.getInstance("MD5")
