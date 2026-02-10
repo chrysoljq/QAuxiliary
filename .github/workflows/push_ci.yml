@@ -72,6 +72,9 @@ jobs:
           key: native-cache-${{ github.sha }}
           restore-keys: native-cache-
 
+      - name: Remove invalid Gradle Wrappers
+        run: find libs/Leonids -name "gradle-wrapper.jar" -delete
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
 
