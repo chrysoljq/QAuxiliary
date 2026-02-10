@@ -202,6 +202,10 @@ android {
             )
             if (signatureDigest != null) {
                 releaseFlags += "-DMODULE_SIGNATURE=$signatureDigest"
+            } else {
+                // For CI/Debug without signing config, inject a dummy signature to pass C++ checks
+                // 32 chars of '0'
+                releaseFlags += "-DMODULE_SIGNATURE=00000000000000000000000000000000"
             }
             externalNativeBuild.cmake {
                 arguments += "-DQAUXV_VERSION=${defaultConfig.versionName}"
